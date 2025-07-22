@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with Docs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    <style>
+        /* Custom scrollbar */
+        .chat-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .dark .chat-scroll::-webkit-scrollbar-track {
+            background: #374151;
+        }
+        .chat-scroll::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+        .dark .chat-scroll::-webkit-scrollbar-thumb {
+            background: #6b7280;
+        }
+        .chat-scroll::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        .dark .chat-scroll::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 h-screen flex transition-colors duration-200">
+    <!-- Sidebar -->
+    <div class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-colors duration-200">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+                📄 Upload Documents
+            </h2>
+            <!-- Theme Toggle Button -->
+            <button 
+                id="themeToggle" 
+                class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200"
+                title="Toggle theme"
+            >
+                <!-- Sun icon (visible in dark mode) -->
+                <svg class="w-5 h-5 hidden dark:block" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
+                </svg>
+                <!-- Moon icon (visible in light mode) -->
+                <svg class="w-5 h-5 block dark:hidden" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                </svg>
+            </button>
+        </div>
+        
+        <div class="p-6 flex-1">
+            <div class="space-y-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Upload your files
+                </label>
+                <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-gray-400 dark:hover:border-gray-500 transition-colors duration-200">
+                    <input 
+                        type="file" 
+                        id="fileInput" 
+                        multiple 
+                        accept=".pdf,.txt,.docx"
+                        class="hidden"
+                    >
+                    <label for="fileInput" class="cursor-pointer">
+                        <div class="text-gray-500 dark:text-gray-400">
+                            <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            <p class="mt-2 text-sm">Click to upload files</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500">PDF, TXT, DOCX</p>
+                        </div>
+                    </label>
+                </div>
+                
+                <!-- Uploaded files list -->
+                <div id="fileList" class="space-y-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Chat Interface -->
+    <div class="flex-1 flex flex-col">
+        <!-- Header -->
+        <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6 transition-colors duration-200">
+            <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+                🧠 Chat with Document Assistant
+            </h1>
+        </div>
+
+        <!-- Chat Messages -->
+        <div class="flex-1 overflow-y-auto chat-scroll p-6 space-y-4 bg-gray-50 dark:bg-gray-900 transition-colors duration-200" id="chatContainer">
+            <!-- Messages will be dynamically added here -->
+        </div>
+
+        <!-- Chat Input -->
+        <div class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-6 transition-colors duration-200">
+            <div class="flex gap-4">
+                <input 
+                    type="text" 
+                    id="messageInput" 
+                    placeholder="Type your question here..."
+                    class="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                >
+                <button 
+                    id="sendButton"
+                    class="bg-blue-600 dark:bg-blue-700 text-white px-6 py-3 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200"
+                >
+                    Send
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ChatApp {
+            constructor() {
+                this.messages = this.loadMessages();
+                this.uploadedFiles = [];
+                this.initializeTheme();
+                this.initializeEventListeners();
+                this.renderMessages();
+            }
+
+            initializeTheme() {
+                // Check for saved theme preference or default to light mode
+                const savedTheme = localStorage.getItem('theme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                
+                if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            }
+
+            toggleTheme() {
+                const isDark = document.documentElement.classList.contains('dark');
+                if (isDark) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                }
+            }
+
+            initializeEventListeners() {
+                // Theme toggle
+                document.getElementById('themeToggle').addEventListener('click', () => {
+                    this.toggleTheme();
+                });
+
+                // File upload
+                document.getElementById('fileInput').addEventListener('change', (e) => {
+                    this.handleFileUpload(e);
+                });
+
+                // Send message
+                document.getElementById('sendButton').addEventListener('click', () => {
+                    this.sendMessage();
+                });
+
+                // Enter key to send message
+                document.getElementById('messageInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.sendMessage();
+                    }
+                });
+            }
+
+            handleFileUpload(event) {
+                const files = Array.from(event.target.files);
+                files.forEach(file => {
+                    if (!this.uploadedFiles.find(f => f.name === file.name)) {
+                        this.uploadedFiles.push(file);
+                    }
+                });
+                this.renderFileList();
+            }
+
+            renderFileList() {
+                const fileList = document.getElementById('fileList');
+                fileList.innerHTML = '';
+
+                this.uploadedFiles.forEach((file, index) => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'flex items-center justify-between bg-gray-50 dark:bg-gray-700 p-3 rounded-lg transition-colors duration-200';
+                    fileItem.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">${file.name}</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">(${this.formatFileSize(file.size)})</span>
+                        </div>
+                        <button onclick="chatApp.removeFile(${index})" class="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors duration-200">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    `;
+                    fileList.appendChild(fileItem);
+                });
+            }
+
+            removeFile(index) {
+                this.uploadedFiles.splice(index, 1);
+                this.renderFileList();
+            }
+
+            formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            sendMessage() {
+                const input = document.getElementById('messageInput');
+                const message = input.value.trim();
+                
+                if (!message) return;
+
+                // Add user message
+                this.addMessage('user', message);
+                input.value = '';
+
+                // Simulate assistant response
+                setTimeout(() => {
+                    const assistantReply = `I received your message: '${message}'`;
+                    this.addMessage('assistant', assistantReply);
+                }, 500);
+            }
+
+            addMessage(role, content) {
+                const message = { role, content, timestamp: new Date().toISOString() };
+                this.messages.push(message);
+                this.saveMessages();
+                this.renderMessage(message);
+                this.scrollToBottom();
+            }
+
+            renderMessage(message) {
+                const chatContainer = document.getElementById('chatContainer');
+                const messageDiv = document.createElement('div');
+                
+                if (message.role === 'user') {
+                    messageDiv.className = 'flex justify-end items-start gap-2';
+                    messageDiv.innerHTML = `
+                        <div class="bg-blue-600 dark:bg-blue-700 text-white rounded-lg px-4 py-2 max-w-xs lg:max-w-md transition-colors duration-200">
+                            <p class="font-semibold text-sm flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                                </svg>
+                                You:
+                            </p>
+                            <p>${this.escapeHtml(message.content)}</p>
+                        </div>
+                    `;
+                } else {
+                    messageDiv.className = 'flex justify-start items-start gap-2';
+                    messageDiv.innerHTML = `
+                        <div class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg px-4 py-2 max-w-xs lg:max-w-md transition-colors duration-200">
+                            <p class="font-semibold text-sm flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/>
+                                    <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"/>
+                                </svg>
+                                Assistant:
+                            </p>
+                            <p>${this.escapeHtml(message.content)}</p>
+                        </div>
+                    `;
+                }
+                
+                chatContainer.appendChild(messageDiv);
+            }
+
+            renderMessages() {
+                const chatContainer = document.getElementById('chatContainer');
+                chatContainer.innerHTML = '';
+                this.messages.forEach(message => this.renderMessage(message));
+                this.scrollToBottom();
+            }
+
+            scrollToBottom() {
+                const chatContainer = document.getElementById('chatContainer');
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            loadMessages() {
+                const stored = localStorage.getItem('chatMessages');
+                return stored ? JSON.parse(stored) : [];
+            }
+
+            saveMessages() {
+                localStorage.setItem('chatMessages', JSON.stringify(this.messages));
+            }
+        }
+
+        // Initialize the chat app
+        const chatApp = new ChatApp();
+    </script>
+</body>
+</html>
