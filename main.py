@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Depends
 from fastapi.responses import RedirectResponse
-from app.api.v1.document import router as DocumentRouter
+from app.api.v1.document import DocumentRouter
+from app.core.config import settings
+import uvicorn
 
 
 app = FastAPI(

@@ -1,6 +1,8 @@
 from pydantic_settings import BaseSettings
+from pydantic import AnyUrl
 from functools import lru_cache
 from dotenv import load_dotenv
+
 
 
 class Settings(BaseSettings):
@@ -17,9 +19,11 @@ class Settings(BaseSettings):
 
     # LangSmith Settings
     LANGSMITH_TRACING: bool
-    LANGSMITH_ENDPOINT: Str
+    LANGSMITH_ENDPOINT: AnyUrl
     LANGSMITH_API_KEY: str
     LANGSMITH_PROJECT: str
+
+    PORT: int = 8000    
 
 
     # SERVER_PORT: int
