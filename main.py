@@ -3,7 +3,7 @@ from fastapi.responses import RedirectResponse
 from app.api.v1.document import DocumentRouter
 from app.core.config import settings
 import uvicorn
-
+from app.api.v1.chat import ChatRouter
 
 app = FastAPI(
         title="Porashuna",
@@ -14,6 +14,7 @@ app = FastAPI(
 
 
 app.include_router(DocumentRouter, prefix="/document", tags=["Document"])
+app.include_router(ChatRouter, prefix="/chat", tags=["Chat"])
 
 
 @app.get("/", include_in_schema=False)
