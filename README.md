@@ -90,12 +90,12 @@ porashuna/
 
 ### Workflow
 
-![PDF Chunking and Embedding]("./docs/chuck process.png")
+![PDF Chunking and Embedding](./docs/chuck%20process.png)
 
 
 The original PDF is divided into smaller chunks, each consisting of 5 pages. This chunking helps manage the context window limitations of the language model. Each chunk is then passed through the Gemini Multimodal model to extract Bangla text in Markdown format. The extracted texts from all chunks are combined into a single coherent document. This combined content is then converted into embeddings using `GoogleGenerativeAIEmbeddings` and stored in a Chroma vector database for efficient semantic search.
 
-![Query Processing and Response]("./docs/generate response.png")
+![Query Processing and Response](./docs/generate%20response.png)
 
 When a user submits a Bangla query, it is first embedded and then compared against the vector database using similarity search. Relevant document chunks are retrieved and passed to the language model (ChatGoogleGenerativeAI) to generate a refined, context-aware response. Additionally, the system maintains chat history in a database to preserve conversational context and continuity across multiple user interactions.
 
@@ -257,7 +257,7 @@ Follow these steps to set up and run the Porashuna system locally:
 **Answer:**  
 I used the **Gemini Multimodal API** to extract Bangla text from PDF files. Traditional tools like PyPDFLoader, pdfplumber, pymupdf4llm and Easyocr often fail to capture Bangla text accurately, especially when the document includes images embedded within paragraphs. The Gemini Multimodal model effectively handles such complex layouts, preserves structures like tables, charts, and MCQs, and can even provide brief descriptions of images—capabilities that most traditional tools lack.
 
-Reference : [./notebooks/Text Extraction (different tools).ipynb](./notebooks./Text Extraction (different tools).ipynb)
+Reference : [Text Extraction (different tools).ipynb](./notebooks/Text%20Extraction%20(different%20tools).ipynb)
 
 
 2. **What chunking strategy did you choose (e.g., paragraph-based, sentence-based, character limit)? Why do you think it works well for semantic retrieval?**  
