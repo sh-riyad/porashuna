@@ -3,29 +3,18 @@ import tempfile
 import shutil
 from pathlib import Path
 from fastapi import APIRouter, UploadFile, File, HTTPException, status
-# from app.schemas.document import UploadPDFRequest, DeletePDFRequest, PDFListResponse
 from app.services.multimodal_llm import multimodal_llm
 from app.prompts.extract_text import PDF_EXTRACTION_PROMPT
 import google.generativeai as genai
 import base64
 from app.utils.pdf_utils import split_pdf_to_chunks
 from langchain.text_splitter import RecursiveCharacterTextSplitter, Language
-from langchain_chroma import Chroma
 from app.core.config import settings
-from app.services.embedding_models import embeddings
+from app.core.vector_store import vector_store
 import asyncio
 import time
 
 DocumentRouter = APIRouter()
-
-
-
-# Initialize vector store (adjust persist_directory as needed)
-vector_store = Chroma(
-    persist_directory="./vector_db",
-    embedding_function=embeddings
-)
-
 
 
 @DocumentRouter.post("/upload")
@@ -108,12 +97,12 @@ async def upload_pdf(file: UploadFile = File(...)):
             metadatas=metadatas
         )
 
-        # # Clean up PDF chunks
-        # for chunk_path in pdf_chunks:
-        #     try:
-        #         chunk_path.unlink()
-        #     except:
-        #         pass
+        # Clean up PDF chunks
+        for chunk_path in pdf_chunks:
+            try:
+                chunk_path.unlink()
+            except:
+                pass
 
         end_time = time.time()  # End timer
         total_extraction_time = round(end_time - start_time, 2)  # In seconds
@@ -139,14 +128,40 @@ async def upload_pdf(file: UploadFile = File(...)):
 
 
 
-# @DocumentRouter.delete("/delete", response_model=dict)
-# async def delete_pdf(payload: DeletePDFRequest):
-#     # Placeholder: In the future, delete the PDF from the vector store
-#     # For now, just return a stub response
-#     return {"message": "PDF delete endpoint (stub)", "pdf_id": payload.pdf_id}
+@DocumentRouter.get("/health")
+async def health_check():
+    """
+    Check if the chat service and vector store are working
+    """
+    try:
+        sample_search = vector_store.similarity_search("test", k=1)
+        doc_count = len(sample_search)
+        
+        return {
+            "status": "healthy",
+            "vector_store_connected": True,
+            "documents_available": doc_count > 0,
+            "estimated_document_count": doc_count
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "error": str(e),
+            "vector_store_connected": False
+        }
 
-# @DocumentRouter.get("/list", response_model=PDFListResponse)
-# async def list_pdfs():
-#     # Placeholder: In the future, list PDFs from the vector store
-#     # For now, just return a stub response
-#     return PDFListResponse(files=[])
+@DocumentRouter.delete("/clear")
+async def clear_vector_store():
+    """
+    Clear all documents from the vector store (use with caution)
+    """
+    try:
+
+        return {
+            "message": "Clear functionality not implemented. Please manually delete the vector_db directory to clear all documents."
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to clear vector store: {str(e)}"
+        )
