@@ -11,10 +11,8 @@ Step 4: Write a clear, short, and accurate answer in Bangla. Do not add anything
 Here is an example:
 
 ---
-Question: Who is referred to as "Sushrushak" in the language of metaphor?  
-Context: ... অনুপ্রমের ভাষায় শুশ্রুষক বলা হয়েছে শুশ্রুষককে ...  
-Answer: শুশ্রুষককে
-
+Question: “এ গাড়ির এই দুই বেঞ্চ আগে হইতেই দুই সাহেব রিজার্ভ করিয়াছেন, আপনাদিগকে অন্য গাড়িতে যাইতে হইবে।”, কে জিজ্ঞাসা করল?
+Ans: দেশি রেলওয়ে কর্মচারী
 ---
 
 Now answer the following:
