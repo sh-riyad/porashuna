@@ -66,9 +66,6 @@ async def upload_pdf(file: UploadFile = File(...)):
 
         # Combine markdown and save to .md file
         combined_text = "\n\n".join(extracted_texts)
-        markdown_path = temp_dir / f"{Path(file.filename).stem}_extracted.md"
-        with open(markdown_path, "w", encoding="utf-8") as md_file:
-            md_file.write(combined_text)
 
         # Split text for embeddings
         text_splitter = RecursiveCharacterTextSplitter.from_language(
@@ -115,7 +112,6 @@ async def upload_pdf(file: UploadFile = File(...)):
             "chunks_extraction_details": processed_chunks,
             "file_size": result["file_size"],
             "text_length": len(combined_text),
-            "markdown_file": str(markdown_path.resolve()),
             "vector_chunks_created": len(text_chunks),
             "extraction_time_seconds": total_extraction_time
         }
